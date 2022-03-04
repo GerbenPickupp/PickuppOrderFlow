@@ -8,6 +8,16 @@ import configparser
 setting_config = configparser.ConfigParser()
 setting_config.read('common_setting.ini')
 
+def get_auth_portal(setting_config):
+    r = requests.post(setting_config['Portal_Setting']['url']+"v2/merchant/sessions/login",data={"email": setting_config['Portal_Setting']['email'],"password":setting_config['Portal_Setting']['password']})
+    response = r.json()
+    token_string = "%s:" % setting_config['Portal_Setting']['email'] + response['data']['token']
+    token_string_bytes = token_string.encode("UTF-8")
+    auth_byte = base64.b64encode(token_string_bytes)
+    auth_string = auth_byte.decode("UTF-8")
+    authorization = "Basic " + auth_string
+    return authorization
+
 def get_auth_admin(setting_config):
     r = requests.post(setting_config['Admin_Setting']['url']+"v2/admin/sessions/login",data={"email": setting_config['Admin_Setting']['email'],"password":setting_config['Admin_Setting']['password']})
     response = r.json()
@@ -19,9 +29,9 @@ def get_auth_admin(setting_config):
     return authorization
 
 def get_auth(setting_config):
-    r = requests.post(setting_config['Portal_Setting']['url']+"v2/agent/login",data={"email": setting_config['Portal_Setting']['email'],"password":setting_config['Portal_Setting']['password']})
+    r = requests.post(setting_config['DA_Setting']['url']+"v2/agent/login",data={"email": setting_config['DA_Setting']['email'],"password":setting_config['DA_Setting']['password']})
     response = r.json()
-    token_string = "%s:" % setting_config['Portal_Setting']['email'] + response['data']['token']
+    token_string = "%s:" % setting_config['DA_Setting']['email'] + response['data']['token']
     token_string_bytes = token_string.encode("UTF-8")
     auth_byte = base64.b64encode(token_string_bytes)
     auth_string = auth_byte.decode("UTF-8")
@@ -29,7 +39,7 @@ def get_auth(setting_config):
     return authorization
 
 def create_order(config):
-    auth = get_auth_admin(setting_config)
+    auth = get_auth_portal(setting_config)
     path = "v2/merchant/orders/single?include_transactions=true"
     payload = json.dumps({
     "id": "",
@@ -100,15 +110,16 @@ def create_order(config):
 
 def deliveryAgent(OrderID):
     auth = get_auth_admin(setting_config)
-    path = "v2/admin/agents/320/trips/%s/accept" % OrderID
+    path = "v2/admin/agents/%s/trips/%s/accept" % (setting_config['DA_Setting']['OrderNumber'],OrderID)
     headers = {
     'Authorization': auth,
     'Content-Type': 'application/json'
     }
-    r = requests.put(setting_config['Setting']['url']+path, headers=headers)
+    r = requests.put(setting_config['DA_Setting']['url']+path, headers=headers)
     response = r.json()
-    print (response)
     trip_id = response["data"]["trips"][0]['id']
+    print (trip_id)
+    print (response)
     return trip_id
 
 def enroute(trip_id):
@@ -124,6 +135,8 @@ def enroute(trip_id):
 
 def dropoff(trip_id):
     auth = get_auth(setting_config)
+    print (auth)
+    print (trip_id)
     url = "https://gateway-uat.hk.pickupp.io/v2/agent/trips/%s/dropoff" % trip_id
     headers = {
     'Authorization': auth,
@@ -131,6 +144,7 @@ def dropoff(trip_id):
     }
     r = requests.put(url, headers=headers)
     response = r.json()
+    print (response)
     return response   
 
 def payrolls():

@@ -17,9 +17,9 @@ class Order_flow(unittest.TestCase):
     def test_CreateOrder_DA_Accept(self):
         #create an order
         OrderID = create_order(self.config)
-        #assign da
+        print ('#assign da')
         TripID = deliveryAgent(OrderID)
-        #Finish delivery
+        print ('Finish delivery')
         enroute(TripID)
         #Check the job status in AP
         dropoff(TripID)
