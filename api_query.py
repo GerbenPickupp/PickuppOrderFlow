@@ -118,8 +118,6 @@ def deliveryAgent(OrderID):
     r = requests.put(setting_config['DA_Setting']['url']+path, headers=headers)
     response = r.json()
     trip_id = response["data"]["trips"][0]['id']
-    print (trip_id)
-    print (response)
     return trip_id
 
 def enroute(trip_id):
@@ -133,6 +131,29 @@ def enroute(trip_id):
     response = r.json()
     return response    
 
+def dropoff_process(trip_id):
+    auth = get_auth(setting_config)
+    print (auth)
+    print (trip_id)
+    url = "https://gateway-uat.hk.pickupp.io/v2/agent/trips/%s/dropoff_process" % trip_id
+    headers = {
+    'Authorization': auth,
+    'Content-Type': 'application/json'
+    }
+    payload = json.dumps({
+        "geolocation":False,
+        "qr_or_passcode":False,
+        "dropoff_photo":False,
+        "contactless_or_unattended":True,
+        "signature_photo":False,
+        "cash_on_delivery":False,
+        "delivery_note":False,
+        "recipient_verify_code":False
+    })
+    r = requests.post(url, headers=headers,data=payload)
+    response = r.json()
+    return response  
+
 def dropoff(trip_id):
     auth = get_auth(setting_config)
     print (auth)
@@ -144,7 +165,6 @@ def dropoff(trip_id):
     }
     r = requests.put(url, headers=headers)
     response = r.json()
-    print (response)
     return response   
 
 def payrolls():

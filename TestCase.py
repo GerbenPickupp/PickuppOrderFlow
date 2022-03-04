@@ -22,6 +22,7 @@ class Order_flow(unittest.TestCase):
         print ('Finish delivery')
         enroute(TripID)
         #Check the job status in AP
+        dropoff_process(TripID)
         dropoff(TripID)
         #Get payment
 
