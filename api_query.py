@@ -38,104 +38,113 @@ def get_auth(setting_config):
     authorization = "Basic " + auth_string
     return authorization
 
-def create_order(config):
+def create_order(config,type,status):
+    conditionchoose = "condition_" + type
     auth = get_auth_portal(setting_config)
     path = "v2/merchant/orders/single?include_transactions=true"
     payload = json.dumps({
-    "id": "",
-    "pickup_contact_person": config['condition']['pickup_contact_person'],
-    "pickup_address_line_1": config['condition']['pickup_address_line_1'],
-    "pickup_address_line_2": config['condition']['pickup_address_line_2'],
-    "pickup_contact_phone": config['condition']['pickup_contact_phone'],
-    "pickup_latitude": {
-        "lat": config['condition']['pickupp_lat'],
-        "lng": config['condition']['pickupp_lng']
-    },
-    "pickup_longitude": {
-        "lat": config['condition']['pickupp_lat'],
-        "lng": config['condition']['pickupp_lng']
-    },
-    "pickup_zip_code": "",
-    "pickup_city": "",
-    "dropoff_contact_person": config['condition']['dropoff_contact_person'],
-    "dropoff_address_line_1": config['condition']['dropoff_address_line_1'],
-    "dropoff_address_line_2": config['condition']['dropoff_address_line_2'],
-    "dropoff_contact_phone": config['condition']['dropoff_contact_phone'],
-    "dropoff_latitude": {
-        "lat": config['condition']['dropoff_lat'],
-        "lng": config['condition']['dropoff_lng']
-    },
-    "dropoff_longitude": {
-        "lat": config['condition']['dropoff_lat'],
-        "lng": config['condition']['dropoff_lng']
-    },
-    "dropoff_zip_code": "",
-    "dropoff_city": "",
-    "width": 1,
-    "length": 1,
-    "height": 1,
-    "weight": 1,
-    "item_name": "qwertyu",
-    "is_fragile": False,
-    "cash_on_delivery": False,
-    "cash_on_delivery_amount": "0",
-    "dropoff_notes": "",
-    "client_reference_number": "",
-    "pickup_sms": False,
-    "reliable": False,
-    "has_delivery_note": False,
-    "origin": "portal",
-    "single_or_bulk": "single",
-    "enforce_validation": True,
-    "outsource_partner": "",
-    "outsource_id": "",
-    "convenience_store_parcel_price": "",
-    "service_type": config['condition']['service_type'],
-    "service_time": 0,
-    "service_offering_id": config['condition']['service_offering_id'],
-    "duty_type": "",
-    "promo_code": "",
-    "items": [],
-    "is_pickupp_care": False,
-    "contacts": []
+        "id": "",
+        "pickup_contact_person": config[conditionchoose]['pickup_contact_person'],
+        "pickup_address_line_1": config[conditionchoose]['pickup_address_line_1'],
+        "pickup_address_line_2": config[conditionchoose]['pickup_address_line_2'],
+        "pickup_contact_phone": config[conditionchoose]['pickup_contact_phone'],
+        "pickup_latitude": {
+            "lat": config[conditionchoose]['pickupp_lat'],
+            "lng": config[conditionchoose]['pickupp_lng']
+        },
+        "pickup_longitude": {
+            "lat": config[conditionchoose]['pickupp_lat'],
+            "lng": config[conditionchoose]['pickupp_lng']
+        },
+        "pickup_zip_code": "",
+        "pickup_city": "",
+        "dropoff_contact_person": config[conditionchoose]['dropoff_contact_person'],
+        "dropoff_address_line_1": config[conditionchoose]['dropoff_address_line_1'],
+        "dropoff_address_line_2": config[conditionchoose]['dropoff_address_line_2'],
+        "dropoff_contact_phone": config[conditionchoose]['dropoff_contact_phone'],
+        "dropoff_latitude": {
+            "lat": config[conditionchoose]['dropoff_lat'],
+            "lng": config[conditionchoose]['dropoff_lng']
+        },
+        "dropoff_longitude": {
+            "lat": config[conditionchoose]['dropoff_lat'],
+            "lng": config[conditionchoose]['dropoff_lng']
+        },
+        "dropoff_zip_code": "",
+        "dropoff_city": "",
+        "width": 1,
+        "length": 1,
+        "height": 1,
+        "weight": 1,
+        "item_name": "qwertyu",
+        "is_fragile": False,
+        "cash_on_delivery": False,
+        "cash_on_delivery_amount": "0",
+        "dropoff_notes": "",
+        "client_reference_number": "",
+        "pickup_sms": False,
+        "reliable": False,
+        "has_delivery_note": False,
+        "origin": "portal",
+        "single_or_bulk": "single",
+        "enforce_validation": True,
+        "outsource_partner": "",
+        "outsource_id": "",
+        "convenience_store_parcel_price": "",
+        "service_type": config[conditionchoose]['service_type'],
+        "service_time": 0,
+        "service_offering_id": config[conditionchoose]['service_offering_id'],
+        "duty_type": "",
+        "promo_code": "",
+        "items": [],
+        "is_pickupp_care": False,
+        "contacts": []
     })
     headers = {
-    'Authorization': auth,
-    'Content-Type': 'application/json'
+        'Authorization': auth,
+        'Content-Type': 'application/json'
     }
     r = requests.post(setting_config['Portal_Setting']['url']+path,headers=headers, data=payload)
     response = r.json()
-    OrderID = response["data"]["trips"][0]['order_id']
-    return OrderID
+    if r.status_code == 200:
+        OrderID = response["data"]["trips"][0]['order_id']
+        return r.status_code, OrderID, status
+    else:
+        return r.status_code, response, False
 
-def deliveryAgent(OrderID):
+def deliveryAgent(OrderID, status):
     auth = get_auth_admin(setting_config)
     path = "v2/admin/agents/%s/trips/%s/accept" % (setting_config['DA_Setting']['OrderNumber'],OrderID)
     headers = {
-    'Authorization': auth,
-    'Content-Type': 'application/json'
+        'Authorization': auth,
+        'Content-Type': 'application/json'
     }
     r = requests.put(setting_config['DA_Setting']['url']+path, headers=headers)
     response = r.json()
-    trip_id = response["data"]["trips"][0]['id']
-    return trip_id
+    if r.status_code == 200:    
+        trip_id = response["data"]["trips"][0]['id']
+        return r.status_code, trip_id, status
+    else:
+        return r.status_code, response, False
 
-def enroute(trip_id):
+def enroute(trip_id, status):
     auth = get_auth(setting_config)
-    url = "https://gateway-uat.hk.pickupp.io/v2/agent/trips/%s/enroute" % trip_id
+    path = "v2/agent/trips/%s/enroute" % trip_id
     headers = {
-    'Authorization': auth,
-    'Content-Type': 'application/json'
+        'Authorization': auth,
+        'Content-Type': 'application/json'
     }
-    r = requests.put(url, headers=headers)
+    r = requests.put(setting_config['DA_Setting']['url']+path, headers=headers)
     response = r.json()
-    return response    
-
-def dropoff_process(trip_id):
+    if r.status_code == 200:
+        return r.status_code, response, status
+    else:   
+        return r.status_code, response, False
+def dropoff_process(trip_id, status):
     auth = get_auth(setting_config)
     print (auth)
     print (trip_id)
-    url = "https://gateway-uat.hk.pickupp.io/v2/agent/trips/%s/dropoff_process" % trip_id
+    path = "v2/agent/trips/%s/dropoff_process" % trip_id
     headers = {
     'Authorization': auth,
     'Content-Type': 'application/json'
@@ -150,30 +159,67 @@ def dropoff_process(trip_id):
         "delivery_note":False,
         "recipient_verify_code":False
     })
-    r = requests.post(url, headers=headers,data=payload)
+    r = requests.post(setting_config['DA_Setting']['url']+path, headers=headers,data=payload)
     response = r.json()
-    return response  
+    if r.status_code == 200:
+        return r.status_code, response, status
+    else:   
+        return r.status_code, response, False
 
-def dropoff(trip_id):
+def dropoff(trip_id, status):
     auth = get_auth(setting_config)
     print (auth)
     print (trip_id)
-    url = "https://gateway-uat.hk.pickupp.io/v2/agent/trips/%s/dropoff" % trip_id
+    path = "v2/agent/trips/%s/dropoff" % trip_id
     headers = {
     'Authorization': auth,
     'Content-Type': 'application/json'
     }
-    r = requests.put(url, headers=headers)
+    r = requests.put(setting_config['DA_Setting']['url']+path, headers=headers)
     response = r.json()
-    return response   
+    if r.status_code == 200:
+        return r.status_code, response, status
+    else:   
+        return r.status_code, response, False
 
-def payrolls():
+def payrolls(status):
     auth = get_auth_admin(setting_config)
-    url = "https://gateway-uat.hk.pickupp.io/v2/admin/payrolls/confirm"
+    path = "v2/admin/payrolls/confirm"
     headers = {
     'Authorization': auth,
     'Content-Type': 'application/json'
     }
-    r = requests.put(url, headers=headers)
+    r = requests.put(setting_config['Admin_Setting']['url']+path, headers=headers)
     response = r.json()
-    return response   
+    if r.status_code == 200:
+        return r.status_code, response, status
+    else:   
+        return r.status_code, response, False
+
+def search_order():
+    auth = get_auth(setting_config)
+    print (auth)
+    path = "v2/agent/trips/new/all"
+    headers = {
+    'Authorization': auth,
+    'Content-Type': 'application/json'
+    }
+    payload = json.dumps({
+        "pickup_districts_l2":"",
+        "dropoff_districts_l2":"",
+        "max_dimension":"",
+        "min_dimension":"",
+        "max_weight":"",
+        "min_weight":"",
+        "project_tag_id":"",
+        "service_types":"",
+        "city":"",
+        "group":"",
+        "is_warehouse":"",
+        "is_bundle":"",
+        "pickup_order_types":"",
+        "dropoff_order_types":""
+    })
+    r = requests.get(setting_config['DA_Setting']['url']+path, headers=headers,data=payload)
+    response = r.json()
+    return r.status_code, response 
