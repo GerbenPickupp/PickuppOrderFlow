@@ -40,6 +40,8 @@ def get_auth(setting_config):
 
 def create_order(config,type,status):
     conditionchoose = "condition_" + type
+    print (conditionchoose)
+    print (config['condition_4Hours']['pickup_contact_person'])
     auth = get_auth_portal(setting_config)
     path = "v2/merchant/orders/single?include_transactions=true"
     payload = json.dumps({
@@ -106,13 +108,13 @@ def create_order(config,type,status):
     }
     r = requests.post(setting_config['Portal_Setting']['url']+path,headers=headers, data=payload)
     response = r.json()
-    if r.status_code == 200:
+    if r.status_code == 201:
         OrderID = response["data"]["trips"][0]['order_id']
         return r.status_code, OrderID, status
     else:
         return r.status_code, response, False
 
-def deliveryAgent(OrderID, status):
+def AssignToDeliveryAgent(OrderID, status):
     auth = get_auth_admin(setting_config)
     path = "v2/admin/agents/%s/trips/%s/accept" % (setting_config['DA_Setting']['OrderNumber'],OrderID)
     headers = {
@@ -223,4 +225,3 @@ def search_order():
     r = requests.get(setting_config['DA_Setting']['url']+path, headers=headers,data=payload)
     response = r.json()
     return r.status_code, response 
-

@@ -14,7 +14,7 @@ class Order_flow(unittest.TestCase):
         self.config = Newconfigparser()
         self.config.read('condition.ini')
 
-    def result_appened(resultList,status_code):
+    def result_appened(self,resultList,status_code,response):
         resultJson = {}
         return resultList
 
@@ -23,9 +23,10 @@ class Order_flow(unittest.TestCase):
         resultList = []
         #create an order
         status_code, OrderID, status = create_order(self.config,'4Hours',status)
+        print (OrderID)
         resultList = self.result_appened(resultList, status_code, OrderID)
-        print ('#assign da')
-        status_code, TripID, status = deliveryAgent(OrderID,status)
+        print ('#assign DA')
+        status_code, TripID, status = AssignToDeliveryAgent(OrderID,status)
         resultList = self.result_appened(resultList, status_code, TripID)
         print ('Finish delivery')
         status_code, response, status = enroute(TripID,status)
@@ -47,7 +48,7 @@ class Order_flow(unittest.TestCase):
         status_code, OrderID, status = create_order(self.config,'Exchange',status)
         resultList = self.result_appened(resultList, status_code, OrderID)
         print ('#assign da')
-        status_code, TripID, status = deliveryAgent(OrderID,status)
+        status_code, TripID, status = AssignToDeliveryAgent(OrderID,status)
         resultList = self.result_appened(resultList, status_code, TripID)
         print ('Finish delivery')
         status_code, response, status = enroute(TripID,status)
@@ -69,7 +70,7 @@ class Order_flow(unittest.TestCase):
         status_code, OrderID, status = create_order(self.config,'Express',status)
         resultList = self.result_appened(resultList, status_code, OrderID)
         print ('#assign da')
-        status_code, TripID, status = deliveryAgent(OrderID,status)
+        status_code, TripID, status = AssignToDeliveryAgent(OrderID,status)
         resultList = self.result_appened(resultList, status_code, TripID)
         print ('Finish delivery')
         status_code, response, status = enroute(TripID,status)
@@ -91,7 +92,7 @@ class Order_flow(unittest.TestCase):
         status_code, OrderID, status = create_order(self.config,'NextDay',status)
         resultList = self.result_appened(resultList, status_code, OrderID)
         print ('#assign da')
-        status_code, TripID, status = deliveryAgent(OrderID,status)
+        status_code, TripID, status = AssignToDeliveryAgent(OrderID,status)
         resultList = self.result_appened(resultList, status_code, TripID)
         print ('Finish delivery')
         status_code, response, status = enroute(TripID,status)
@@ -113,7 +114,7 @@ class Order_flow(unittest.TestCase):
         status_code, OrderID, status = create_order(self.config,'SameDay',status)
         resultList = self.result_appened(resultList, status_code, OrderID)
         print ('#assign da')
-        status_code, TripID, status = deliveryAgent(OrderID,status)
+        status_code, TripID, status = AssignToDeliveryAgent(OrderID,status)
         resultList = self.result_appened(resultList, status_code, TripID)
         print ('Finish delivery')
         status_code, response, status = enroute(TripID,status)
