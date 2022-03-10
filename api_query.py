@@ -1,6 +1,4 @@
 import base64
-from distutils.command.config import config
-from operator import ge
 import requests
 import json
 import configparser
@@ -16,7 +14,10 @@ def get_auth_portal(setting_config):
     auth_byte = base64.b64encode(token_string_bytes)
     auth_string = auth_byte.decode("UTF-8")
     authorization = "Basic " + auth_string
-    return authorization
+    if r.status_code == 201:
+        return authorization, True
+    else: 
+        return authorization, False
 
 def get_auth_admin(setting_config):
     r = requests.post(setting_config['Admin_Setting']['url']+"v2/admin/sessions/login",data={"email": setting_config['Admin_Setting']['email'],"password":setting_config['Admin_Setting']['password']})
@@ -26,7 +27,10 @@ def get_auth_admin(setting_config):
     auth_byte = base64.b64encode(token_string_bytes)
     auth_string = auth_byte.decode("UTF-8")
     authorization = "Basic " + auth_string
-    return authorization
+    if r.status_code == 201:
+        return authorization, True
+    else: 
+        return authorization, False
 
 def get_auth(setting_config):
     r = requests.post(setting_config['DA_Setting']['url']+"v2/agent/login",data={"email": setting_config['DA_Setting']['email'],"password":setting_config['DA_Setting']['password']})
@@ -36,13 +40,14 @@ def get_auth(setting_config):
     auth_byte = base64.b64encode(token_string_bytes)
     auth_string = auth_byte.decode("UTF-8")
     authorization = "Basic " + auth_string
-    return authorization
+    if r.status_code == 201:
+        return authorization, True
+    else: 
+        return authorization, False
 
 def create_order(config,type,status):
     conditionchoose = "condition_" + type
-    print (conditionchoose)
-    print (config['condition_4Hours']['pickup_contact_person'])
-    auth = get_auth_portal(setting_config)
+    auth, auth_status = get_auth_portal(setting_config)
     path = "v2/merchant/orders/single?include_transactions=true"
     payload = json.dumps({
         "id": "",
@@ -110,12 +115,12 @@ def create_order(config,type,status):
     response = r.json()
     if r.status_code == 201:
         OrderID = response["data"]["trips"][0]['order_id']
-        return r.status_code, OrderID, status
+        return r.status_code, OrderID, True
     else:
         return r.status_code, response, False
 
 def AssignToDeliveryAgent(OrderID, status):
-    auth = get_auth_admin(setting_config)
+    auth, auth_status = get_auth_admin(setting_config)
     path = "v2/admin/agents/%s/trips/%s/accept" % (setting_config['DA_Setting']['OrderNumber'],OrderID)
     headers = {
         'Authorization': auth,
@@ -125,12 +130,12 @@ def AssignToDeliveryAgent(OrderID, status):
     response = r.json()
     if r.status_code == 200:    
         trip_id = response["data"]["trips"][0]['id']
-        return r.status_code, trip_id, status
+        return r.status_code, trip_id, True
     else:
         return r.status_code, response, False
 
 def enroute(trip_id, status):
-    auth = get_auth(setting_config)
+    auth, auth_status= get_auth(setting_config)
     path = "v2/agent/trips/%s/enroute" % trip_id
     headers = {
         'Authorization': auth,
@@ -139,13 +144,11 @@ def enroute(trip_id, status):
     r = requests.put(setting_config['DA_Setting']['url']+path, headers=headers)
     response = r.json()
     if r.status_code == 200:
-        return r.status_code, response, status
+        return r.status_code, response, True
     else:   
         return r.status_code, response, False
 def dropoff_process(trip_id, status):
-    auth = get_auth(setting_config)
-    print (auth)
-    print (trip_id)
+    auth, auth_status = get_auth(setting_config)
     path = "v2/agent/trips/%s/dropoff_process" % trip_id
     headers = {
     'Authorization': auth,
@@ -164,14 +167,12 @@ def dropoff_process(trip_id, status):
     r = requests.post(setting_config['DA_Setting']['url']+path, headers=headers,data=payload)
     response = r.json()
     if r.status_code == 200:
-        return r.status_code, response, status
+        return r.status_code, response, True
     else:   
         return r.status_code, response, False
 
 def dropoff(trip_id, status):
-    auth = get_auth(setting_config)
-    print (auth)
-    print (trip_id)
+    auth, auth_status = get_auth(setting_config)
     path = "v2/agent/trips/%s/dropoff" % trip_id
     headers = {
     'Authorization': auth,
@@ -180,12 +181,12 @@ def dropoff(trip_id, status):
     r = requests.put(setting_config['DA_Setting']['url']+path, headers=headers)
     response = r.json()
     if r.status_code == 200:
-        return r.status_code, response, status
+        return r.status_code, response, True
     else:   
         return r.status_code, response, False
 
 def payrolls(status):
-    auth = get_auth_admin(setting_config)
+    auth, auth_status = get_auth_admin(setting_config)
     path = "v2/admin/payrolls/confirm"
     headers = {
     'Authorization': auth,
@@ -194,12 +195,12 @@ def payrolls(status):
     r = requests.put(setting_config['Admin_Setting']['url']+path, headers=headers)
     response = r.json()
     if r.status_code == 200:
-        return r.status_code, response, status
+        return r.status_code, response, True
     else:   
         return r.status_code, response, False
 
 def search_order():
-    auth = get_auth(setting_config)
+    auth, auth_status = get_auth(setting_config)
     print (auth)
     path = "v2/agent/trips/new/all"
     headers = {
@@ -225,3 +226,4 @@ def search_order():
     r = requests.get(setting_config['DA_Setting']['url']+path, headers=headers,data=payload)
     response = r.json()
     return r.status_code, response 
+
