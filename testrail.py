@@ -24,7 +24,7 @@ def CountContentForResult(resultList,StepCounts):
         body = {
             "content":"Step%s" % (i+1),
             "actual":"%s" % resultList[((i*2)+1)],
-            "status_id":"%s" % resultList[((i*2)+2)]
+            "status_id":"%s" % resultList[((i*2))]
             }
         result.append(body)
     return result
