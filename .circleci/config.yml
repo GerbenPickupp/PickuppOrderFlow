@@ -1,25 +1,30 @@
 version: 2.1
 
-orbs:
-
-python: circleci/python@1.5.0
-
 jobs:
-  build-and-test: 
-    docker:
-      - image: cimg/python:3.10.2
-    
-    steps:
-      - checkout
-      - python/install-packages:
-          pkg-manager: pip install -r requirements.txt
-          
-      - run:
-          name: Run tests
-          command: python TestCase.py
 
+  build-and-test:
+
+    docker:
+
+      # `circleci/python` 的映像檔	
+
+      - image: circleci/python:3.8.1
+    steps:
+
+      - checkout
+
+      - run:
+          command: |
+            pip install -r requirements.txt
+
+          name: Install
+
+      - run:
+          command: |
+            python TestCase.py
+          name: Test
 
 workflows:
-  sample: 
+  main:
     jobs:
       - build-and-test
