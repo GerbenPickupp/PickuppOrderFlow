@@ -30,14 +30,17 @@ class Order_flow(unittest.TestCase):
 
     def TranslateForStatus(self,resultList):
         FinalResult = []
+        test = []
         for index in resultList:
             if index == True:
                 FinalResult.append(1)
+                test.append(1)
             elif index == False:
                 FinalResult.append(5)
+                test.append(5)
             else:
                 FinalResult.append(index)
-        print (FinalResult)
+        print (test)
         return FinalResult
 
     def test_OrderFlow4Hours(self):
@@ -249,6 +252,43 @@ class Order_flow(unittest.TestCase):
         totalstatus = self.CheckTotalStatus(resultList)
         resultList = self.TranslateForStatus(resultList)
         AddResultByStep(totalstatus,self.testIds,"Collection",resultList,self.runId)
+
+    def test_OrderFlowSelfPickUppNextDay(self):
+        totalstatus = True
+        resultList = []
+        #Step 1 : Get_auth_portal
+        response, status = get_auth_portal(self.setting_config)
+        resultList.extend((status,response))
+        #Step 2 : Get_auth_admin
+        response, status = get_auth_admin(self.setting_config)
+        resultList.extend((status,response))
+        #Step 3 : Get_auth
+        response, status = get_auth_admin(self.setting_config)
+        resultList.extend((status,response))
+        #Step 4 : Create an order
+        status_code, OrderID, status = create_order(self.config,'Self pick up via Next day',totalstatus)
+        resultList.extend((status, OrderID))
+        #Step 5 : Assign to DA
+        status_code, TripID, status = AssignToDeliveryAgent(OrderID,totalstatus)
+        resultList.extend((status, TripID))
+        #Step 6 : Enroute
+        status_code, response, status = enroute(TripID,totalstatus)
+        resultList.extend((status, response))
+        #Step 7 : Dropoff Process
+        status_code, response, status = dropoff_process(TripID,totalstatus)
+        resultList.extend((status, response))
+        status_code, response, status = dropoff(TripID,totalstatus)
+        resultList.extend((status, response))
+        #Step 8 : Payrolls
+        status = 3
+        response = ""
+        resultList.extend((status, response))
+        #Final : Update result to testrail
+        totalstatus = self.CheckTotalStatus(resultList)
+        resultList = self.TranslateForStatus(resultList)
+        AddResultByStep(totalstatus,self.testIds,"Self pick up via Next day",resultList,self.runId)
+
+
 
 if __name__ == '__main__':
     unittest.main()  
