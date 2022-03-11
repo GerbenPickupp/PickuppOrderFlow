@@ -30,17 +30,13 @@ class Order_flow(unittest.TestCase):
 
     def TranslateForStatus(self,resultList):
         FinalResult = []
-        test = []
         for index in resultList:
             if index == True:
                 FinalResult.append(1)
-                test.append(1)
             elif index == False:
                 FinalResult.append(5)
-                test.append(5)
             else:
                 FinalResult.append(index)
-        print (test)
         return FinalResult
 
     def test_OrderFlow4Hours(self):
