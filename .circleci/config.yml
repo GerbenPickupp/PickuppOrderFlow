@@ -1,29 +1,18 @@
 version: 2.1
-
 jobs:
-
   build-and-test:
-
     docker:
-
-      # `circleci/python` 的映像檔	
-
       - image: circleci/python:3.8.1
     steps:
-
       - checkout
-
       - run:
           command: |
             pip install -r requirements.txt
-
           name: Install
-
       - run:
           command: |
             python TestCase.py
           name: Test
-
 workflows:
   main:
     jobs:

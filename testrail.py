@@ -6,7 +6,7 @@ import json
 
 testrail_config = configparser.ConfigParser()
 testrail_config.read('testrail.ini')
-api = TestRailAPI('https://pickupp.testrail.io/', 'gerben.chen@pickupp.io', 'Ss0128210#')
+api = TestRailAPI(testrail_config['User Setting']['url'], testrail_config['User Setting']['account'], testrail_config['User Setting']['password'])
 #list(testrail_config[TestSuiteName]['case_ids'])
 def AddTestRunAndTest(TestSuiteName):
     runId = api.runs.add_run(project_id=2,suite_id=1,name=TestSuiteName,include_all=False,case_ids=testrail_config[TestSuiteName]['case_ids'].split(','))
