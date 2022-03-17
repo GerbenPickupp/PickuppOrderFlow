@@ -11,7 +11,7 @@ jobs:
           name: Install
       - run:
           command: |
-            python TestCase.py
+            python OrderFlow.py
           name: Test
 workflows:
   main:
